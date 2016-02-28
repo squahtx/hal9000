@@ -88,7 +88,7 @@ class Plugin(IPlugin):
 	# Data
 	@property
 	def dataDirectory(self):
-		path = os.path.join(__file__, "../../data")
+		path = os.path.join(__file__, "../../../data")
 		path = os.path.join(path, self.name.lower())
 		path = os.path.normpath(path)
 		
