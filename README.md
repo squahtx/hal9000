@@ -7,6 +7,6 @@ Setup
 ------------------------
 Python 3.4 is needed.
 
-Run ./setup.sh.
-Edit config.py.
-Run ./run.sh to start the bot.
+Run ./setup.sh.  
+Edit config.py.  
+Run ./run.sh to start the bot.  
