@@ -214,9 +214,11 @@ class TerminalEmulator(object):
 							
 							if self.logger is not None:
 								self.logger.log("TerminalEmulator: Rejecting " + rejectedString + ("\\x%02x" % ord(c)) + " / " + c)
-				elif c == ">" or c == "(":
-					self.advance()
-					pass
+				elif c == ">": self.advance()
+				elif c == "(": self.advance() # Set default font
+				elif c == ")": self.advance() # Set alternate font
+				elif c == "D": self.advance() # Scroll down one line
+				elif c == "M": self.advance() # Scroll up one line
 				else:
 					rejectedString = "\\x1b" + c
 					self.writeString(rejectedString)
