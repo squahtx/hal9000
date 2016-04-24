@@ -8,16 +8,16 @@ class ChannelLogger(Logger):
 	def __init__(self, channel = None):
 		super(ChannelLogger, self).__init__()
 		
-		self._eventLoop          = None
-		self._channel            = channel
+		self._eventLoop           = None
+		self._channel             = channel
 		
-		self.message             = None
-		self.messageLineCount    = 0
-		self.linesPerMessage     = 20
+		self.message              = None
+		self.messageLength        = 0
+		self.maximumMessageLength = 2000 - len("```\n\u200B```")
 		
-		self.queue               = []
+		self.queue                = []
 		
-		self.dispatchLoopRunning = False
+		self.dispatchLoopRunning  = False
 	
 	# ILogger
 	def logRaw(self, message):
@@ -50,7 +50,7 @@ class ChannelLogger(Logger):
 		
 		self._channel = channel
 		self.message = None
-		self.messageLineCount = 0
+		self.messageLength = 0
 		
 		self.eventLoop = asyncio.get_event_loop()
 		
@@ -78,23 +78,50 @@ class ChannelLogger(Logger):
 	@asyncio.coroutine
 	def dispatchLoop(self):
 		while len(self.queue) > 0:
-			lineCount = self.linesPerMessage - self.messageLineCount
-			lines = self.queue[0:lineCount]
-			content = "\n".join(lines)
-			self.queue = self.queue[lineCount:]
-			lineCount = len(lines)
+			remainingLength = self.maximumMessageLength
 			
+			# Try to reuse message
+			reuseMessage = False
 			if self.message is not None and \
 			   time.time() - self.message.timestamp < 5:
+				reuseMessage = True
+				remainingLength -= self.messageLength
+			
+			appendLength = 0
+			appendMessages = []
+			
+			while len(self.queue) > 0:
+				requiredLength = 0
+				if reuseMessage or len(appendMessages) > 0:
+					requiredLength = 1
+				
+				requiredLength += len(self.queue[0])
+				
+				# Overflow into next message unless the current message
+				if requiredLength > remainingLength:
+					if appendLength == 0:
+						reuseMessage = False
+						remainingLength = self.maximumMessageLength
+						
+						# Retry
+						continue
+					else:
+						break
+				
+				remainingLength -= requiredLength
+				appendLength += requiredLength
+				appendMessages.append(self.queue[0])
+				del self.queue[0]
+			
+			content = "\n".join(appendMessages)
+			
+			# Try to reuse message
+			if reuseMessage:
 				self.message = yield from self.dispatchExistingMessage(content)
-				self.messageLineCount += lineCount
+				self.messageLength += appendLength
 			else:
 				self.message = yield from self.dispatchNewMessage(content)
-				self.messageLineCount = lineCount
-			
-			if self.messageLineCount >= self.linesPerMessage:
-				self.message = None
-				self.messageLineCount = 0
+				self.messageLength = appendLength
 		
 		self.dispatchLoopRunning = False
 	
@@ -108,7 +135,7 @@ class ChannelLogger(Logger):
 		
 		content = content.strip()
 		
-		content += "\r\n" + message
+		content += "\n" + message
 		content = "```\n" + content + "```"
 		
 		return (yield from self.message.editMessage(content))

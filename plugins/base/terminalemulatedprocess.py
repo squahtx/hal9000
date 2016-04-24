@@ -18,7 +18,7 @@ class TerminalEmulatedProcess(object):
 	def __init__(self):
 		super(TerminalEmulatedProcess, self).__init__()
 		
-		self._terminated     = Event("terminated")
+		self._terminated    = Event("terminated")
 		self._screenUpdated = Event("screenUpdated")
 		
 		self._logger = None
