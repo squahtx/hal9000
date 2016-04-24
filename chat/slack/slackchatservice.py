@@ -62,7 +62,7 @@ class SlackChatService(ChatService):
 	
 	# SlackChatService
 	@asyncio.coroutine
-	def pollingLoop(self, interval = 1):
+	def pollingLoop(self, interval = 0.1):
 		self.log("Started polling loop...")
 		
 		while self.client is not None:
