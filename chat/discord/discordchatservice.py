@@ -34,7 +34,10 @@ class DiscordChatService(ChatService):
 	def connect(self, config):
 		if self.isConnected: raise RuntimeError("DiscordChatService.connect : Already connected!")
 		
-		yield from self.client.start(config["email"], config["password"])
+		if "token" in config:
+			yield from self.client.start(config["token"])
+		else:
+			yield from self.client.start(config["email"], config["password"])
 	
 	@asyncio.coroutine
 	def disconnect(self):

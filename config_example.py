@@ -6,8 +6,7 @@ services = {}
 services["discord"] = {
 	"enabled": False,
 	"type": "discord",
-	"email": "username@example.com",
-	"password": "password"
+	"token": "a0a0a0a0a0a0a0a0a0a0a0a0.a0a_0a.0a0a0a0a0a0a0a0a0a0a0a0a0a0"
 }
 
 services["slack"] = {
