@@ -87,7 +87,7 @@ class ChannelLogger(Logger):
 			if self.message is not None and \
 			   time.time() - self.message.timestamp < 5:
 				self.message = yield from self.dispatchExistingMessage(content)
-				self.messageLineCount + lineCount
+				self.messageLineCount += lineCount
 			else:
 				self.message = yield from self.dispatchNewMessage(content)
 				self.messageLineCount = lineCount
