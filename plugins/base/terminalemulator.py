@@ -166,7 +166,19 @@ class TerminalEmulator(object):
 						m = int(mString) if len(mString) > 0 else 1
 						
 						c = yield from self.peekCharacter()
-						if c == "G":
+						if c == "A":
+							self.advance()
+							self.setCursorPos(self.cursorX, self.cursorY - n)
+						elif c == "B":
+							self.advance()
+							self.setCursorPos(self.cursorX, self.cursorY + n)
+						elif c == "C":
+							self.advance()
+							self.setCursorPos(self.cursorX + n, self.cursorY)
+						elif c == "D":
+							self.advance()
+							self.setCursorPos(self.cursorX - n, self.cursorY)
+						elif c == "G":
 							self.advance()
 							self.setCursorPos(n - 1, self.cursorY)
 						elif c == "H":
