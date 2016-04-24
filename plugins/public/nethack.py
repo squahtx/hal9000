@@ -65,6 +65,9 @@ class NetHack(Plugin):
 		
 		self.handleConnected(self.chatbot)
 		self.addChatBotListeners(self.chatbot)
+		
+		self.registerCommand("nh", self.handleNetHack).setDescription("Send NetHack keyboard input.")
+		self.registerCommand("nethack", self.handleNetHack).setDescription("Send NetHack keyboard input.")
 	
 	def handleUninitialize(self):
 		self.removeChatBotListeners(self.chatbot)
@@ -77,6 +80,9 @@ class NetHack(Plugin):
 	
 	# NetHack
 	# Internal
+	def handleNetHack(self, command, commandInvocation, message):
+		self.handleInput(message.author, commandInvocation.fullArguments)
+	
 	# Process
 	def createProcess(self):
 		if self.terminalEmulatedProcess.running: return
@@ -160,13 +166,15 @@ class NetHack(Plugin):
 	
 	@asyncio.coroutine
 	def clearChannel(self):
-		from chat.discord import DiscordMessage
-		
 		self.log("Clearing channel...")
 		
-		messages = yield from self.channel.chatService.client.logs_from(self.channel.channel)
-		for message in messages:
-			yield from DiscordMessage(self.channel.chatService, message).delete()
+		# HACK: Delete Discord messages
+		if getattr(self.channel.chatService.client, "logs_from", None):
+			from chat.discord import DiscordMessage
+			
+			messages = yield from self.channel.chatService.client.logs_from(self.channel.channel)
+			for message in messages:
+				yield from DiscordMessage(self.channel.chatService, message).delete()
 	
 	def addChannelListeners(self, channel):
 		if channel is None: return
@@ -181,8 +189,13 @@ class NetHack(Plugin):
 	def handleMessageReceived(self, chatService, channel, message):
 		if message.author == message.server.localUser: return
 		
+		self.handleInput(message.author, message.content)
+		
+		message.postDelete()
+	
+	def handleInput(self, user, content):
 		if self.terminalEmulatedProcess.running:
-			input = message.content
+			input = content
 			if input.lower() in self.keyMap:
 				input = self.keyMap[input.lower()]
 			
@@ -192,10 +205,8 @@ class NetHack(Plugin):
 			self.terminalEmulatedProcess.write(input.encode("utf-8"))
 		
 		del self.commandHistory[0]
-		self.commandHistory.append("@\u200B" + message.author.displayName + ": " + message.content)
+		self.commandHistory.append("@\u200B" + user.displayName + ": " + content)
 		self.queueCommandHistoryUpdate()
-		
-		message.postDelete()
 	
 	# Output
 	def startUpdateLoop(self):
@@ -235,6 +246,12 @@ class NetHack(Plugin):
 		          "          [a]pply [s]earch    [d]rop     [k]ick                   | [#loot] [#pray] [#chat]\n" \
 		          "          [z]ap   [,]pick-up  [.]wait    [<, >]stairs             | \n"
 		message += "\n".join(self.commandHistory)
+		
+		# HACK: Slack does not allow message deletion
+		from chat.slack import SlackChatService
+		if isinstance(self.channel.chatService, SlackChatService):
+			message += "\nPlease use the !nh command in a private message to the bot to submit keyboard input."
+		
 		message += "\u200B```"
 		return message
 	
