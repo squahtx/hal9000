@@ -24,7 +24,6 @@ class SlackUser(User):
 	@asyncio.coroutine
 	def sendPrivateMessage(self, content):
 		response = self.chatService.client.api_call("im.open", user = self.id)
-		response = json.loads(response)
 		channelId = response.get("channel", {}).get("id")
 		if channelId is None: return
 		

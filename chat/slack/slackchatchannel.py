@@ -35,6 +35,5 @@ class SlackChatChannel(ChatChannel):
 	@asyncio.coroutine
 	def sendMessage(self, message):
 		response = self.chatService.client.api_call("chat.postMessage", channel = self.id, text = message, as_user = True)
-		response = json.loads(response)
 		if "message" not in response: return None
 		return SlackMessage(self.chatService, self, response["message"])

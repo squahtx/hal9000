@@ -41,7 +41,6 @@ class SlackMessage(Message):
 	@asyncio.coroutine
 	def editMessage(self, newContent):
 		response = self.chatService.client.api_call("chat.update", channel = self.channel.id, ts = self.message["ts"], text = newContent)
-		response = json.loads(response)
 		self.message["text"] = response["text"]
 		return self
 	
