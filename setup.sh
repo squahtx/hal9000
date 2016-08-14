@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo apt-get install python3-venv
+
 if [ ! -e "config.py" ]; then
 	cp config_example.py config.py
 fi
