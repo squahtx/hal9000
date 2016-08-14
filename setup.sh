@@ -9,6 +9,7 @@ fi
 if [ ! -d "venv" ]; then
 	python3 -m venv venv
 	. venv/bin/activate
+		pip install wheel
 		pip install git+https://github.com/Rapptz/discord.py.git@async
 		pip install git+https://github.com/slackhq/python-slackclient.git
 	deactivate
